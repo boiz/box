@@ -1,9 +1,6 @@
 const fs=require("fs");
 const path=require("path");
 
-
-let getTimeStamp=()=>{(new Date).getTime()}
-
 let trigChange=pathname=>{
   fs.mkdir(pathname,err=>{
     fs.rmdir(pathname,err=>{});
@@ -23,18 +20,15 @@ fs.watch("inbox",(event, storeFolder)=>{
         let ext=path.extname(x).toLowerCase();
         let filename=path.basename(x,ext).toLowerCase();
 
-
         let arr=filename.split("_");
         let type=arr[0].toLowerCase();
         let name=arr[1]?arr[1].toLowerCase():0;
 
-
         let categoryFolder;
 
-        if(/v/i.test(type)) categoryFolder="venders";
+        if(/v/i.test(type)) categoryFolder="vendors";
         else if(/s/i.test(type)) categoryFolder="sales";
         else categoryFolder="other";
-
 
         let originalPath=`${storePath}/${x}`;
         let tempPath=`${storePath}/temp`;
@@ -46,7 +40,7 @@ fs.watch("inbox",(event, storeFolder)=>{
 
         fs.mkdir(targetFolder,err=>{
         
-        targetFilename=`${filename}_${storeFolder}_${(new Date).getTime()}${ext}`;
+          targetFilename=`${filename}_${storeFolder}_${(new Date).getTime()}${ext}`;
 
           fs.rename(originalPath,`${targetFolder}/${targetFilename}`,err=>{
             if(err){
@@ -61,10 +55,7 @@ fs.watch("inbox",(event, storeFolder)=>{
           });
 
         });
-
       }
-
     }
-
   });
 });
