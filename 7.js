@@ -1,47 +1,67 @@
 const fs=require("fs");
 const path=require("path");
 
-let getISOTime=date=>{
-  date=new Date(date);
-  return new Date(date-date.getTimezoneOffset()*60000).toISOString().replace(/T|Z/g," ").substr(0,19);
+
+let getTimeStamp=()=>{(new Date).getTime()}
+
+let trigChange=pathname=>{
+  fs.mkdir(pathname,err=>{
+    fs.rmdir(pathname,err=>{});
+  });
 }
 
-//console.log=null;
+fs.watch("inbox",(event, storeFolder)=>{
 
-fs.watch("inbox",(event, folder)=>{
+  let storePath=`inbox/${storeFolder}`;
 
-  let folderPath=`inbox/${folder}`;
-
-	fs.readdir(folderPath,(err,files)=>{
+	fs.readdir(storePath,(err,files)=>{
     console.log(files.length);
     if(files.length>0){
 
       for(let x of files){
 
-        let arr=x.split("_");
-        let type=arr[0];
-        let person=arr[1];
-        //let store=arr[2];
+        let ext=path.extname(x).toLowerCase();
+        let filename=path.basename(x,ext).toLowerCase();
 
-        let ext=(path.extname(x));
+
+        let arr=filename.split("_");
+        let type=arr[0].toLowerCase();
+        let name=arr[1]?arr[1].toLowerCase():0;
+
+
+        let categoryFolder;
+
+        if(/v/i.test(type)) categoryFolder="venders";
+        else if(/s/i.test(type)) categoryFolder="sales";
+        else categoryFolder="other";
+
+
+        let originalPath=`${storePath}/${x}`;
+        let tempPath=`${storePath}/temp`;
 
         let targetFolder;
 
-        if(/v/i.test(type)) targetFolder="venders";
-        else if(/s/i.test(type)) targetFolder="sales";
-        else targetFolder="other";
+        targetFolder=`data/${categoryFolder}/${name}`;
 
 
-        let target=`data/${targetFolder}/${person}_${folder}_${getISOTime(Date()).replace(/-| |:/g,"")}.${ext}`;
+        fs.mkdir(targetFolder,err=>{
+        
+        targetFilename=`${filename}_${storeFolder}_${(new Date).getTime()}${ext}`;
 
-        fs.rename(`${folderPath}/${x}`,target.toLowerCase(),err=>{
-          if(err){
-            console.log(err);
-            /*change event trigger*/
-            setTimeout(()=>{fs.writeFile(`${folderPath}/err.log`,err=>{})},500);
-          }
-          else console.log(`inbox/${folder}/${x} transferred successfully`);
+          fs.rename(originalPath,`${targetFolder}/${targetFilename}`,err=>{
+            if(err){
+              console.log(err);
+              /*change event trigger*/
+              setTimeout(()=>{trigChange(tempPath)},500);
+            }
+            else console.log({
+              from:originalPath,
+              to:`${targetFolder}/${targetFilename}`
+            });
+          });
+
         });
+
       }
 
     }
