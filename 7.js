@@ -52,17 +52,24 @@ fs.watch(inbox,{recursive:true},(event, storeFolder)=>{
 
         let categoryFolder;
 
-        if(/v/i.test(type)) categoryFolder="vendors";
-        else if(/s/i.test(type)) categoryFolder="sales";
-        else categoryFolder="other";
+        if(/v/i.test(type)){
+          categoryFolder="vendors";
+          if(!name) name="unfiled";
+
+        }
+        else if(/s/i.test(type)){
+          categoryFolder="sales";
+          if(!name) name="unfiled";
+        }
+        else{
+          categoryFolder="unfiled";
+          name="";
+        }
 
         let originalPath=`${storePath}/${x}`;
         let tempPath=`${storePath}/temp`;
 
-        let targetFolder;
-
-        targetFolder=`${data}/${categoryFolder}/${name}`;
-
+        let targetFolder=`${data}/${categoryFolder}/${name}`;
 
         fs.mkdir(targetFolder,err=>{
         
@@ -86,7 +93,14 @@ fs.watch(inbox,{recursive:true},(event, storeFolder)=>{
               /*change event trigger*/
               //setTimeout(()=>{trigChange(tempPath)},500);
             }
-            else deleteElement(processing,originalPath);
+            else{
+              deleteElement(processing,originalPath);
+              console.log({
+                from:originalPath,
+                to:`${targetFolder}/${targetFilename}`
+              });
+
+            }
           });
 
           if(!processing.includes(originalPath)) processing.push(originalPath);
@@ -97,4 +111,12 @@ fs.watch(inbox,{recursive:true},(event, storeFolder)=>{
       }
     }
   });
+});
+
+
+/*trigger all store folders*/
+fs.readdir(inbox,(err,files)=>{
+  for(let x of files){
+    trigChange(`${inbox}/${x}/temp`);
+  }
 });
