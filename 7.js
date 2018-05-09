@@ -52,10 +52,11 @@ fs.watch(inbox,{recursive:true},(event, storeFolder)=>{
 
         let categoryFolder;
 
+        //console.log(type);
+
         if(/v/i.test(type)){
           categoryFolder="vendors";
           if(!name) name="unfiled";
-
         }
         else if(/s/i.test(type)){
           categoryFolder="sales";
@@ -65,6 +66,7 @@ fs.watch(inbox,{recursive:true},(event, storeFolder)=>{
           categoryFolder="unfiled";
           name="";
         }
+
 
         let originalPath=`${storePath}/${x}`;
         let tempPath=`${storePath}/temp`;
@@ -89,7 +91,7 @@ fs.watch(inbox,{recursive:true},(event, storeFolder)=>{
 
             console.log(`start copying ${originalPath}`);
             if(err){
-              //console.log(err);
+              console.log(err);
               /*change event trigger*/
               //setTimeout(()=>{trigChange(tempPath)},500);
             }
