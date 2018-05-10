@@ -49,7 +49,7 @@ fs.watch(inbox,{recursive:true},(event, filename)=>{
 
 	company=basename.split("_")[1];
 
-	if(/^v_|^ddsr|^seafood|^meat|^produce/i.test(basename)){
+	if(/^v_|^ddsr|seafood|^meat|produce/i.test(basename)){
 		category="vendors";
 		if(!company) company="unfiled";
 	}
@@ -67,7 +67,6 @@ fs.watch(inbox,{recursive:true},(event, filename)=>{
 	if(!isExist(companyDir)) fs.mkdirSync(companyDir);
 	let destination=path.join(companyDir,basename+"_"+path.dirname(filename)+"_"+(new Date).getTime()+path.extname(filename));
 
-	
 
 	//console.log(original,destination);
 
@@ -80,12 +79,7 @@ fs.watch(inbox,{recursive:true},(event, filename)=>{
 			//console.log(err);
 		}
 		else{
-
-			console.log(`${destination} transferred id ${count++}`);
-/*			console.log({
-                from:original,
-                to:destination
-          	},"copy successfully",count++);*/
+			console.log(`${(new Date).toLocaleString()} ${destination} transferred successfully id# ${count++}`);
 		}
 		deleteElement(prss,original);
 	});
