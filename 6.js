@@ -49,13 +49,13 @@ fs.watch(inbox,{recursive:true},(event, filename)=>{
 
 	company=basename.split("_")[1];
 
-	if(/^v_/i.test(basename)){
+	if(/^v_|^ddsr|^seafood|^meat|^produce/i.test(basename)){
 		category="vendors";
 		if(!company) company="unfiled";
 	}
-	else if(/^s_/i.test(basename)){
+	else if(/^s_|^crf|^eod/i.test(basename)){
 		category="sales";
-		if(!company) company="unfiled"
+		if(!company) company="unfiled";
 	}
 
 	else{
@@ -65,7 +65,7 @@ fs.watch(inbox,{recursive:true},(event, filename)=>{
 
 	let companyDir=path.join(data,category,company);
 	if(!isExist(companyDir)) fs.mkdirSync(companyDir);
-	let destination=path.join(data,category,company,path.dirname(filename)+"_"+basename+"_"+(new Date).getTime()+path.extname(filename));
+	let destination=path.join(companyDir,basename+"_"+path.dirname(filename)+"_"+(new Date).getTime()+path.extname(filename));
 
 	
 
