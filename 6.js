@@ -47,13 +47,13 @@ fs.watch(inbox,{recursive:true},(event, filename)=>{
 	let company,category;
 
 
-	company=basename.split("_")[1];
+	//company=basename.split("_")[1];
 
-	if(/^v_|^ddsr|seafood|^meat|produce/i.test(basename)){
+	if(/^ddsr|seafood|meat|produce/i.test(basename)){
 		category="vendors";
 		if(!company) company="unfiled";
 	}
-	else if(/^s_|^crf|^eod/i.test(basename)){
+	else if(/^crf|^eod/i.test(basename)){
 		category="sales";
 		if(!company) company="unfiled";
 	}
