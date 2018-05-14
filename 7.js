@@ -1,15 +1,13 @@
+/*version 0.5*/
+
 const fs=require("fs");
 const path=require("path");
 
-let inbox="C:/Users/administrator/Box/testinbox";
-let data="z:/app/stores";
+//let inbox="C:/Users/administrator/Box/inbox";
+//let data="z:/app/stores";
 
-
-let trigChange=pathname=>{
-  fs.mkdir(pathname,err=>{
-    fs.rmdir(pathname,err=>{});
-  });
-}
+let inbox="C:/Users/administrator/Desktop/junk/Inbox";
+let data="C:/Users/administrator/Desktop/junk/stores";
 
 let renamePlus=(original,destination,callback)=>{
   fs.copyFile(original,destination,err=>{
@@ -17,108 +15,94 @@ let renamePlus=(original,destination,callback)=>{
   });
 }
 
-let processing=[];
-
 let deleteElement=(array,element)=>{
   let index = array.indexOf(element);
   if (index > -1) array.splice(index, 1);
   return array;
 }
 
+let getFilename=filepath=>{
+    let ext=path.extname(filepath)
+    return path.basename(filepath,ext)
+}
 
-fs.watch(inbox,{recursive:true},(event, storeFolder)=>{
-
-  storeFolder=path.dirname(storeFolder);
-  
-  //console.log(event,storeFolder);
-
-  let storePath=`${inbox}/${storeFolder}`;
-
-	
-  fs.readdir(storePath,(err,files)=>{
-
-
-    //console.log(files.length);
-    if(files.length>0){
-
-      for(let x of files){
-
-        let ext=path.extname(x).toLowerCase();
-        let filename=path.basename(x,ext).toLowerCase();
-
-        let arr=filename.split("_");
-        let type=arr[0].toLowerCase();
-        let name=arr[1]?arr[1].toLowerCase():0;
-
-        let categoryFolder;
-
-        //console.log(type);
-
-        if(/v/i.test(type)){
-          categoryFolder="vendors";
-          if(!name) name="unfiled";
-        }
-        else if(/s/i.test(type)){
-          categoryFolder="sales";
-          if(!name) name="unfiled";
-        }
-        else{
-          categoryFolder="unfiled";
-          name="";
-        }
-
-
-        let originalPath=`${storePath}/${x}`;
-        let tempPath=`${storePath}/temp`;
-
-        let targetFolder=`${data}/${categoryFolder}/${name}`;
-
-        fs.mkdir(targetFolder,err=>{
-        
-          targetFilename=`${filename}_${storeFolder}_${(new Date).getTime()}${ext}`;
-
-/*
-          console.log({
-            from:originalPath,
-            to:`${targetFolder}/${targetFilename}`
-          });*/
-
-          //console.log(processing.length);
-
-          if(processing.includes(originalPath)) return;
-
-          renamePlus(originalPath,`${targetFolder}/${targetFilename}`,err=>{
-
-            console.log(`start copying ${originalPath}`);
-            if(err){
-              console.log(err);
-              /*change event trigger*/
-              //setTimeout(()=>{trigChange(tempPath)},500);
-            }
-            else{
-              deleteElement(processing,originalPath);
-              console.log({
-                from:originalPath,
-                to:`${targetFolder}/${targetFilename}`
-              });
-
-            }
-          });
-
-          if(!processing.includes(originalPath)) processing.push(originalPath);
-
-
-
-        });
-      }
-    }
-  });
-});
-
-
-/*trigger all store folders*/
-fs.readdir(inbox,(err,files)=>{
-  for(let x of files){
-    trigChange(`${inbox}/${x}/temp`);
+let isExist=folderName=>{
+  try {
+    fs.accessSync(folderName);
+    return true;
+  } catch (err) {
+    return false;
   }
+}
+
+let getISOTimeStamp=date=>{
+  date=new Date(date);
+  return new Date(date-date.getTimezoneOffset()*60000).toISOString().replace(/T|Z|-|:| |\./g,"");
+}
+
+let count=0;
+let prss=[];
+
+//console.log(`Start Watching ${inbox}`);
+
+
+fs.watch(inbox,{recursive:true},(event, filename)=>{
+
+  if(!filename) return;
+
+  let original=path.join(inbox,filename);
+  if(prss.includes(original)) return;
+  let basename=path.basename(filename,path.extname(filename));
+
+  let company,category;
+
+
+  //company=basename.split("_")[1];
+  //console.log(basename+"test");
+
+  if(/^ddsr|seafood|meat|produce/i.test(basename)){
+    category="vendors";
+    if(!company) company="unfiled";
+  }
+  else if(/^crf|^eod/i.test(basename)){
+    category="sales";
+    if(!company) company="unfiled";
+  }
+
+  else{
+    category="unfiled";
+    company="";
+  }
+
+  let companyDir=path.join(data,category,company);
+
+/*  
+  if(!isExist(companyDir)) fs.mkdirSync(companyDir);
+*/
+
+  let destination=path.join(companyDir,basename+"_"+path.dirname(filename)+"_"+getISOTimeStamp(new Date)+path.extname(filename));
+
+  prss.push(original);
+
+
+  renamePlus(original,destination,err=>{
+    if(err) {
+      /*console.log(err);*/
+    }
+    else{
+      console.log(count++);
+/*
+      console.log({
+        time:(new Date).toLocaleString(),
+        original:original,
+        destination:destination,
+        countSinceLastLaunch:count++
+      });*/
+    }
+
+    deleteElement(prss,original);
+  });
+
+
+
 });

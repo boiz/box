@@ -32,20 +32,28 @@ let isExist=folderName=>{
 	}
 }
 
-let y=0;
+let getISOTimeStamp=date=>{
+  date=new Date(date);
+  return new Date(date-date.getTimezoneOffset()*60000).toISOString().replace(/T|Z|-|:| |\./g,"");
+}
+
 let count=0;
 let prss=[];
+
+
+console.log(`Start watching ${inbox}`);
 
 fs.watch(inbox,{recursive:true},(event, filename)=>{
 
 	if(!filename) return;
+
+
 
 	let original=path.join(inbox,filename);
 	if(prss.includes(original)) return;
 	let basename=path.basename(filename,path.extname(filename));
 
 	let company,category;
-
 
 	//company=basename.split("_")[1];
 
@@ -64,9 +72,8 @@ fs.watch(inbox,{recursive:true},(event, filename)=>{
 	}
 
 	let companyDir=path.join(data,category,company);
-	if(!isExist(companyDir)) fs.mkdirSync(companyDir);
-	let destination=path.join(companyDir,basename+"_"+path.dirname(filename)+"_"+(new Date).getTime()+path.extname(filename));
-
+	//if(!isExist(companyDir)) fs.mkdirSync(companyDir);
+	let destination=path.join(companyDir,basename+"_"+path.dirname(filename)+"_"+getISOTimeStamp(new Date)+path.extname(filename));
 
 	//console.log(original,destination);
 
@@ -83,5 +90,7 @@ fs.watch(inbox,{recursive:true},(event, filename)=>{
 		}
 		deleteElement(prss,original);
 	});
+
+	
 
 });
