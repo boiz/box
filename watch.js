@@ -23,14 +23,6 @@ let getFilename=filepath=>{
     return path.basename(filepath,ext)
 }
 
-let isExist=folderName=>{
-	try {
-	  fs.accessSync(folderName);
-	  return true;
-	} catch (err) {
-	  return false;
-	}
-}
 
 let getISOTimeStamp=date=>{
   date=new Date(date);
@@ -40,13 +32,19 @@ let getISOTimeStamp=date=>{
 let count=0;
 let prss=[];
 
+let toProcess=filename=>{
+
+}
+
+
 
 console.log(`Start watching ${inbox}`);
 
+
 fs.watch(inbox,{recursive:true},(event, filename)=>{
 
-	if(!filename) return;
 
+	if(!filename) return;
 
 
 	let original=path.join(inbox,filename);
@@ -90,5 +88,8 @@ fs.watch(inbox,{recursive:true},(event, filename)=>{
 		}
 		deleteElement(prss,original);
 	});
+
+
+
 
 });

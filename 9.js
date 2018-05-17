@@ -1,24 +1,20 @@
 const fs=require("fs");
 const path=require("path");
 
-
-
 let inbox="C:/Users/administrator/Box/testinbox";
 let data="z:/app/teststores";
 let count=0;
-
 
 let renamePlus=(original,destination,callback)=>{
   fs.copyFile(original,destination,err=>{
     fs.unlink(original,callback);
   });
 }
+
 let getFilename=filepath=>{
     let ext=path.extname(filepath)
     return path.basename(filepath,ext)
 }
-
-
 
 let scanAll=(inbox,callback)=>{
 	fs.readdir(inbox,(err,names)=>{
@@ -35,10 +31,10 @@ let scanAll=(inbox,callback)=>{
 	});
 }
 
-scanAll(inbox,link=>{
-	//console.log(link);
+scanAll(inbox,filename=>{
+	//console.log(filename);
 
-	let original=link;
+	let original=filename;
 	let destination=path.join(data,getFilename(original));
 
 
@@ -51,9 +47,13 @@ scanAll(inbox,link=>{
 		}
 	});
 
-
 });
 
+
+fs.watch(inbox,{recursive:true},(event, filename)=>{
+	console.log(filename);
+
+});
 
 
 
