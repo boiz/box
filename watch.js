@@ -51,19 +51,19 @@ fs.watch(inbox,{recursive:true},(event, filename)=>{
 
 	let original=path.join(inbox,filename);
 	if(prss.includes(original)) return;
-	let basename=path.basename(filename,path.extname(filename));
 
+	let basename=path.basename(filename,path.extname(filename));
 	let company,category;
 
 	//company=basename.split("_")[1];
 
-	if(/^ddsr|seafood|meat|produce/i.test(basename)){
+	if(/^ddsr|seafood|meat|produce|bbq|supply|the hut|grocery/i.test(basename)){
 		category="vendors";
 		if(!company) company="unfiled";
 	}
-	else if(/^crf|^eod/i.test(basename)){
+	else if(/^crf|^eod|^cr file|^cce/i.test(basename)){
 		category="sales";
-		if(!company) company="unfiled";
+		if(!company) company=path.dirname(filename);
 	}
 
 	else{
@@ -78,7 +78,7 @@ fs.watch(inbox,{recursive:true},(event, filename)=>{
 	//console.log(original,destination);
 
 	prss.push(original);
-	
+
 	//console.log(event,filename,count++);
 
 	renamePlus(original,destination,err=>{
@@ -90,7 +90,5 @@ fs.watch(inbox,{recursive:true},(event, filename)=>{
 		}
 		deleteElement(prss,original);
 	});
-
-	
 
 });
