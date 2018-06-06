@@ -6,7 +6,7 @@ const path=require("path");
 //let inbox="C:/Users/administrator/Box/inbox";
 //let data="z:/app/stores";
 
-let inbox="C:/Users/administrator/Desktop/junk/Inbox";
+let inbox="C:/Users/administrator/Box/testinbox";
 let data="C:/Users/administrator/Desktop/junk/stores";
 
 let renamePlus=(original,destination,callback)=>{

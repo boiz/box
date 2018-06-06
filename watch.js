@@ -3,8 +3,8 @@
 const fs=require("fs");
 const path=require("path");
 
-let inbox="C:/Users/administrator/Box/inbox";
-let data="z:/app/stores";
+let inbox="C:/Users/administrator/Box/testInbox";
+let data="C:/Users/administrator/Desktop/junk";
 
 let renamePlus=(original,destination,callback)=>{
   fs.copyFile(original,destination,err=>{
@@ -18,12 +18,6 @@ let deleteElement=(array,element)=>{
   return array;
 }
 
-let getFilename=filepath=>{
-    let ext=path.extname(filepath)
-    return path.basename(filepath,ext)
-}
-
-
 let getISOTimeStamp=date=>{
   date=new Date(date);
   return new Date(date-date.getTimezoneOffset()*60000).toISOString().replace(/T|Z|-|:| |\./g,"");
@@ -32,48 +26,43 @@ let getISOTimeStamp=date=>{
 let count=0;
 let prss=[];
 
-let toProcess=filename=>{
-
-}
-
-
 
 console.log(`Start watching ${inbox}`);
 
-
 fs.watch(inbox,{recursive:true},(event, filename)=>{
 
-
 	if(!filename) return;
-
-
 	let original=path.join(inbox,filename);
+
 	if(prss.includes(original)) return;
 
+
 	let basename=path.basename(filename,path.extname(filename));
-	let company,category;
+	let category,company=path.dirname(filename);
 
-	//company=basename.split("_")[1];
-
-	if(/^ddsr|seafood|meat|produce|bbq|supply|the hut|grocery/i.test(basename)){
+/*	if(/^ddsr|seafood|meat|produce|bbq|supply|the hut|grocery/i.test(basename)){
 		category="vendors";
-		if(!company) company="unfiled";
+		company="unfiled";
+	}*/
+
+	if(/^crf|^eod|^cr file|^cce/i.test(basename)){
+		category="4. Sales";
 	}
-	else if(/^crf|^eod|^cr file|^cce/i.test(basename)){
-		category="sales";
-		if(!company) company=path.dirname(filename);
+
+	else if(/^pcr/i.test(basename)){
+		category="2. Accounts Payables/3. Petty Cash and Reimbursements";
+	}
+
+	else if(/^v_/i.test(basename)){
+		category="2. Accounts Payables/1. Vendor Invoices";
+		company=basename.split("_")[1];
 	}
 
 	else{
 		category="unfiled";
-		company="";
 	}
 
-	let companyDir=path.join(data,category,company);
-	//if(!isExist(companyDir)) fs.mkdirSync(companyDir);
-	let destination=path.join(companyDir,basename+"_"+path.dirname(filename)+"_"+getISOTimeStamp(new Date)+path.extname(filename));
-
-	//console.log(original,destination);
+	let destination=path.join(data,category,company,basename+"_"+path.dirname(filename)+"_"+getISOTimeStamp(new Date)+path.extname(filename));
 
 	prss.push(original);
 
@@ -88,8 +77,6 @@ fs.watch(inbox,{recursive:true},(event, filename)=>{
 		}
 		deleteElement(prss,original);
 	});
-
-
 
 
 });
