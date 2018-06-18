@@ -26,7 +26,6 @@ let getISOTimeStamp=date=>{
 let count=0;
 let prss=[];
 
-
 console.log(`Start watching ${inbox}`);
 
 fs.watch(inbox,{recursive:true},(event, filename)=>{
@@ -40,26 +39,18 @@ fs.watch(inbox,{recursive:true},(event, filename)=>{
 	let basename=path.basename(filename,path.extname(filename));
 	let category,company=path.dirname(filename);
 
-/*	if(/^ddsr|seafood|meat|produce|bbq|supply|the hut|grocery/i.test(basename)){
-		category="vendors";
-		company="unfiled";
-	}*/
+	console.log(basename);
 
-	if(/^crf|^eod|^cr file|^cce/i.test(basename)){
+	if(/^crf|^eod/i.test(basename)){
 		category="4. Sales";
 	}
 
-	else if(/^pcr/i.test(basename)){
-		category="2. Accounts Payables/3. Petty Cash and Reimbursements";
-	}
-
-	else if(/^v_/i.test(basename)){
-		category="2. Accounts Payables/1. Vendor Invoices";
-		company=basename.split("_")[1];
+	else if(/^ddsr/i.test(basename)){
+		category="2. Accounts Payables/DDSR";
 	}
 
 	else{
-		category="unfiled";
+		category="0. Unfiled";
 	}
 
 	let destination=path.join(data,category,company,basename+"_"+path.dirname(filename)+"_"+getISOTimeStamp(new Date)+path.extname(filename));
