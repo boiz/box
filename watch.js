@@ -3,22 +3,29 @@
 const fs=require("fs");
 const path=require("path");
 
-let inbox="C:/Users/administrator/Box/testInbox";
-let data="C:/Users/administrator/Desktop/junk";
 
-let renamePlus=(original,destination,callback)=>{
+/*real folders*/
+const inbox="C:/Users/administrator/Box/Inbox";
+const data="w:/";
+
+
+/*dev folders*/
+/*const inbox="C:/Users/administrator/Box/testInbox";
+const data="C:/Users/administrator/Desktop/junk";*/
+
+const renamePlus=(original,destination,callback)=>{
   fs.copyFile(original,destination,err=>{
     fs.unlink(original,callback);
   });
 }
 
-let deleteElement=(array,element)=>{
+const deleteElement=(array,element)=>{
   let index = array.indexOf(element);
   if (index > -1) array.splice(index, 1);
   return array;
 }
 
-let getISOTimeStamp=date=>{
+const getISOTimeStamp=date=>{
   date=new Date(date);
   return new Date(date-date.getTimezoneOffset()*60000).toISOString().replace(/T|Z|-|:| |\./g,"");
 }
@@ -39,14 +46,14 @@ fs.watch(inbox,{recursive:true},(event, filename)=>{
 	let basename=path.basename(filename,path.extname(filename));
 	let category,company=path.dirname(filename);
 
-	console.log(basename);
+	//console.log(basename);
 
 	if(/^crf|^eod/i.test(basename)){
 		category="4. Sales";
 	}
 
 	else if(/^ddsr/i.test(basename)){
-		category="2. Accounts Payables/DDSR";
+		category="2. Accounts Payables/5. DDSR";
 	}
 
 	else{
