@@ -1,28 +1,42 @@
-/*version 0.5*/
-
 const fs=require("fs");
 const path=require("path");
+const chokidar = require("chokidar");
+
+const
+Reset = "\x1b[0m",
+Bright = "\x1b[1m",
+Dim = "\x1b[2m",
+Underscore = "\x1b[4m",
+Blink = "\x1b[5m",
+Reverse = "\x1b[7m",
+Hidden = "\x1b[8m",
+
+FgBlack = "\x1b[30m",
+FgRed = "\x1b[31m",
+FgGreen = "\x1b[32m",
+FgYellow = "\x1b[33m",
+FgBlue = "\x1b[34m",
+FgMagenta = "\x1b[35m",
+FgCyan = "\x1b[36m",
+FgWhite = "\x1b[37m",
+
+BgBlack = "\x1b[40m",
+BgRed = "\x1b[41m",
+BgGreen = "\x1b[42m",
+BgYellow = "\x1b[43m",
+BgBlue = "\x1b[44m",
+BgMagenta = "\x1b[45m",
+BgCyan = "\x1b[46m",
+BgWhite = "\x1b[47m"
+
+const inbox="C:/Users/administrator/Box/Inbox", data="w:/"; //real
+//const inbox="C:/Users/administrator/Box/testInbox",data="C:/Users/administrator/Desktop/junk"; //for dev
 
 
-/*real folders*/
-const inbox="C:/Users/administrator/Box/Inbox";
-const data="w:/";
-
-
-/*dev folders*/
-/*const inbox="C:/Users/administrator/Box/testInbox";
-const data="C:/Users/administrator/Desktop/junk";*/
-
-const renamePlus=(original,destination,callback)=>{
-  fs.copyFile(original,destination,err=>{
-    fs.unlink(original,callback);
-  });
-}
-
-const deleteElement=(array,element)=>{
-  let index = array.indexOf(element);
-  if (index > -1) array.splice(index, 1);
-  return array;
+const consoleEx={
+	log:(color,msg)=>{
+		console.log(color,`${(new Date).toLocaleString()} ${msg}`);
+	}
 }
 
 const getISOTimeStamp=date=>{
@@ -30,23 +44,46 @@ const getISOTimeStamp=date=>{
   return new Date(date-date.getTimezoneOffset()*60000).toISOString().replace(/T|Z|-|:| |\./g,"");
 }
 
-let count=0;
-let prss=[];
+const move=(original,destination)=>{
 
-console.log(`Start watching ${inbox}`);
+	//consoleEx.log(FgWhite,`Queue file ${original}`)	;
+  fs.copyFile(original,destination,copyErr=>{
 
-fs.watch(inbox,{recursive:true},(event, filename)=>{
+  	if(copyErr){
+  		if(copyErr.code=="ENOENT") consoleEx.log(FgRed,`Move file failed from ${original} Notes: Target Folder doesn't exist`);		
+  	}
+  	else{
+  		fs.unlink(original,err=>{
+  			if(!err) consoleEx.log(FgGreen,`Move file succeeded to ${destination}`);
+  		});	
+  	}
+  });
+}
 
-	if(!filename) return;
-	let original=path.join(inbox,filename);
+const get=(path,what)=>{
+	const arr=path.split("\\");
 
-	if(prss.includes(original)) return;
+	let value;
+	switch(what){
+		case "store":
+			value=arr[arr.length-2];
+			break;
+		case "filename":
+			value=arr[arr.length-1];
+			break;
+	}
 
+	return value;
+}
 
-	let basename=path.basename(filename,path.extname(filename));
-	let category,company=path.dirname(filename);
+const getTarget=original=>{
 
-	//console.log(basename);
+	const filename=get(original,"filename");
+	const ext=path.extname(filename);
+
+	const basename=path.basename(filename,ext);
+	let category,store=get(original,"store");
+
 
 	if(/^crf|^eod/i.test(basename)){
 		category="4. Sales";
@@ -60,21 +97,22 @@ fs.watch(inbox,{recursive:true},(event, filename)=>{
 		category="0. Unfiled";
 	}
 
-	let destination=path.join(data,category,company,basename+"_"+path.dirname(filename)+"_"+getISOTimeStamp(new Date)+path.extname(filename));
+	return path.join(data,category,store,basename+"_"+store+"_"+getISOTimeStamp(new Date)+ext);
+}
 
-	prss.push(original);
 
-	//console.log(event,filename,count++);
+consoleEx.log(FgCyan,`Start watching ${inbox}`);
 
-	renamePlus(original,destination,err=>{
-		if(err) {
-			//console.log(err);
-		}
-		else{
-			console.log(`${(new Date).toLocaleString()} ${destination} transferred successfully id# ${count++}`);
-		}
-		deleteElement(prss,original);
-	});
 
+chokidar.watch(inbox, {ignored: /^\./, persistent: true}).on("add", original=>{
+
+	if(get(original,"store")=="Oxnard") return;
+	move(original,getTarget(original));
+
+
+}).on("change",original=>{
+
+	if(get(original,"store")=="Oxnard") return;
+	move(original,getTarget(original));
 
 });
