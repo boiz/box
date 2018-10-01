@@ -29,8 +29,8 @@ BgMagenta = "\x1b[45m",
 BgCyan = "\x1b[46m",
 BgWhite = "\x1b[47m"
 
-const inbox="C:/Users/administrator/Box/Inbox", data="w:/"; //real
-//const inbox="C:/Users/administrator/Box/testInbox",data="C:/Users/administrator/Desktop/junk"; //for dev
+//const inbox="C:/Users/administrator/Box/Inbox", data="w:/"; //real
+const inbox="C:/Users/administrator/Box/testInbox",data="C:/Users/administrator/Desktop/junk"; //for dev
 
 
 const consoleEx={
