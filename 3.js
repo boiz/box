@@ -40,7 +40,6 @@ const mkdirp=require("mkdirp");
 const inbox="C:/Users/administrator/Box/Inbox", cbntRoot="w:/"; //real
 
 
-
 const get=(path,what)=>{
 
 	const arr=path.split("\\");
@@ -62,9 +61,14 @@ const get=(path,what)=>{
 
 }
 
-const getISODate=()=>{
-  date=new Date();
-  return new Date(date-date.getTimezoneOffset()*60000).toISOString().replace(/T|Z|-|:| |\./g,"").substr(0,8);
+const getISO=mode=>{
+
+  const date=new Date();
+  const output=new Date(date-date.getTimezoneOffset()*60000).toISOString().replace(/T|Z|-|:| |\./g,"");
+
+  if(mode=="date") return output.substr(0,8);
+  else if(mode=="time") return output.substr(8);
+
 }
 
 let count=0;
@@ -100,12 +104,11 @@ chokidar.watch(inbox, {ignored: /(^|[\/\\])\../}).on('all', (event, path) => {
 
 	if(/OTHER/i.test(category)) category="OTH";
 
-
-	const desDir=pa.join(cbntRoot,"Abacus",storeName,getISODate(),category);
-	const desFileName=`${storeId}${category}${getISODate()}-${++x}${extName}`;
+	const desDir=pa.join(cbntRoot,"Abacus",storeName,getISO("date"),category);
+	const desFileName=`${storeId}${category}${getISO("date")}-${getISO("time")}${extName}`;
 	const desFull=pa.join(desDir,desFileName);
 
-	console.log(`desDir is ${desDir}, desFileName is ${desFileName}`);
+	//console.log(`desDir is ${desDir}, desFileName is ${desFileName}`);
 
 	mkdirp(desDir,err=>{
 		if(err) return;
