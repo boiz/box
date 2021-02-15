@@ -36,8 +36,9 @@ const pa=require("path");
 const chokidar = require("chokidar");
 const mkdirp=require("mkdirp");
 
-//const inbox="C:/Users/administrator/Box/testInbox",cbntRoot="C:/Users/administrator/Desktop/junk"; //for dev
-const inbox="C:/Users/administrator/Box/Inbox", cbntRoot="w:/"; //real
+//const inbox="C:/Users/office/Box/devbox",cbntRoot="C:/Users/office/Desktop/devw"; //for dev
+const inbox="C:/Users/box/Box/Inbox", cbntRoot="w:/"; //real
+//const inbox="C:/Users/box/Desktop/1", cbntRoot="C:/Users/box/Desktop/2"; //for dev
 
 
 const get=(path,what)=>{
@@ -73,6 +74,7 @@ const getISO=mode=>{
 
 let count=0;
 let x=0;
+let addcount=0;
 
 const move=(original,destination)=>{
 
@@ -93,7 +95,9 @@ const move=(original,destination)=>{
 chokidar.watch(inbox, {ignored: /(^|[\/\\])\../}).on('all', (event, path) => {
 	console.log(FgWhite,`Item Scanned ${++count} ${event}`);
 	let category=get(path,"category");
-	if(!/CRF|DSD|EOD|OTHER/i.test(category)||event=="unlink") return;
+	if(!/CRF|DSD|EOD|OTHER/i.test(category)||event!="add") return;
+
+
 
 	const fileName=get(path,"fileName");
 	const storeName=get(path,"storeName");
@@ -104,14 +108,13 @@ chokidar.watch(inbox, {ignored: /(^|[\/\\])\../}).on('all', (event, path) => {
 
 	if(/OTHER/i.test(category)) category="OTH";
 
-	const desDir=pa.join(cbntRoot,"Abacus",storeName,getISO("date"),category);
+	const desDir=pa.join(cbntRoot,"Abacus",storeName,category);
 	const desFileName=`${storeId}${category}${getISO("date")}-${getISO("time")}${extName}`;
 	const desFull=pa.join(desDir,desFileName);
 
 	//console.log(`desDir is ${desDir}, desFileName is ${desFileName}`);
 
-	mkdirp(desDir,err=>{
-		if(err) return;
+	mkdirp(desDir).then(made=>{
 		move(path,desFull);
 	});
 

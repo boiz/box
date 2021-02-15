@@ -1,39 +1,111 @@
-const fs=require("fs");
-const path=require("path");
+const
+Reset = "\x1b[0m",
+Bright = "\x1b[1m",
+Dim = "\x1b[2m",
+Underscore = "\x1b[4m",
+Blink = "\x1b[5m",
+Reverse = "\x1b[7m",
+Hidden = "\x1b[8m",
 
-const inbox="C:/Users/administrator/Box/testInbox";
-const data="z:/app/stores";
+FgBlack = "\x1b[30m",
+FgRed = "\x1b[31m",
+FgGreen = "\x1b[32m",
+FgYellow = "\x1b[33m",
+FgBlue = "\x1b[34m",
+FgMagenta = "\x1b[35m",
+FgCyan = "\x1b[36m",
+FgWhite = "\x1b[37m",
+
+BgBlack = "\x1b[40m",
+BgRed = "\x1b[41m",
+BgGreen = "\x1b[42m",
+BgYellow = "\x1b[43m",
+BgBlue = "\x1b[44m",
+BgMagenta = "\x1b[45m",
+BgCyan = "\x1b[46m",
+BgWhite = "\x1b[47m";
+
+const consoleEx={
+	log:(color,msg)=>{
+		console.log(color,`${(new Date).toLocaleString()} ${msg}`);
+	}
+}
+
+const fs=require("fs");
+const pa=require("path");
+const chokidar = require("chokidar");
+const mkdirp=require("mkdirp");
+
+//const inbox="C:/Users/office/Box/testInbox",cbntRoot="C:/Users/office/Desktop/testw"; //for dev
+const inbox="C:/Users/box/Box/IPDI Invoice Summary", cbntRoot="W:/IPDI Invoice Summary"; //real
+
+
+const get=(path,what)=>{
+
+	const arr=path.split("\\");
+	switch(what){
+
+		case "storeId":
+			return /\d+/.exec(arr[arr.length-3])[0];
+			break;
+		case "storeName":
+			return /[a-z| ]+/i.exec(arr[arr.length-3])[0].trim();
+			break;
+		case "category":
+			return arr[arr.length-2];
+			break;
+		case "fileName":
+			return arr[arr.length-1];
+			break;
+	}
+
+}
+
+const getISO=mode=>{
+
+  const date=new Date();
+  const output=new Date(date-date.getTimezoneOffset()*60000).toISOString().replace(/T|Z|-|:| |\./g,"");
+
+  if(mode=="date") return output.substr(0,8);
+  else if(mode=="time") return output.substr(8);
+
+}
 
 let count=0;
+let x=0;
 
-fs.readdir(inbox,(err,res)=>{
-	if(err) throw err;
-	for(let x of res){
-		const folder=path.join(inbox,x);
-		fs.readdir(folder,(err,res)=>{
-			
-			for(const x of res){
+const move=(original,destination)=>{
 
-				//console.log(folder);
+	//consoleEx.log(FgWhite,`Queue file ${original}`)	;
+  fs.copyFile(original,destination,copyErr=>{
 
-				fs.access(path.join(folder,x),(err)=>{
-					
-					if(err) console.log(x);
-				});
+  	if(copyErr){
+  		console.log(copyErr);
+  		if(copyErr.code=="ENOENT") consoleEx.log(FgRed,`Move file failed from ${original} Notes: Target Folder doesn't exist`);
+  	}
+  	else{
+  		fs.unlink(original,err=>{
+  			if(!err) consoleEx.log(FgMagenta,`Move file succeeded to ${destination}`);
+  		});	
+  	}
+  });
+}
 
-				//console.log(x);
-				//console.log(path.join(folder,x));
+chokidar.watch(inbox, {ignored: /(^|[\/\\])\../}).on('all', (event, path) => {
 
-				//if(path.extname(x)) console.log(x);
-				
-			}
-			//console.log(count);
-		});
-	}
-});
+	if(event!="add") return;
 
-fs.access("C:/Users/administrator/Box/testInbox/024 Temecula",(err)=>{
+	const fileName=get(path,"fileName");
+	const extName=pa.extname(fileName);	
+
+	const fn=`DOC${getISO("date")}-${getISO("time")}${extName}`;
+
+
+	const des=pa.join(cbntRoot,fn);
 	
-	console.log(err);
+	move(path,des);
+
 });
 
+
+consoleEx.log(FgCyan,`Start watching ${inbox}`);
